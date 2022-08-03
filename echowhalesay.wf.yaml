@@ -1,0 +1,44 @@
+# echo whale
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: http-template-
+spec:
+  entrypoint: main
+  templates:
+    - name: main
+      dag:
+        tasks:
+          - name: good
+            template: http
+            arguments:
+              parameters: [{name: url, value: "https://309d-2405-201-5001-9051-b42f-f844-be-e63d.in.ngrok.io/gomod1?echoValue=neha"}]         
+          - name: step2
+            depends: good
+            template: echo
+            arguments:
+              parameters:
+              - name: message 
+                value: '{{tasks.good.outputs.result}}'
+ 
+    - name: http
+      inputs:
+        parameters:
+          - name: url
+      outputs:
+        parameters:
+          - name: result
+            value: '{{response.body}}'
+      http:
+        url: "{{inputs.parameters.url}}"
+    
+    - name: echo
+      inputs:
+        parameters:
+          - name: message
+      container:
+        image: 'docker/whalesay:latest'
+        command:
+          - cowsay
+        args:
+          - '{{inputs.parameters.message}}'

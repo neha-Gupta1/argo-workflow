@@ -1,0 +1,54 @@
+# Maybewhale that shows off how a if-condition works in a workflow
+# argoworkflow does not have if-else but the do support maybe
+# fission workflow have facility to - check length of input and hopefully some similar functions
+
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: conditional-parameter-
+spec:
+  entrypoint: main
+  templates:
+    - name: main
+      steps:
+        - - name: ifShortEnough
+            template: flip-coin
+        - - name: smallerNo
+            template: echo
+            when: "{{steps.ifShortEnough.outputs.result}} < 20"
+            arguments:
+              parameters:
+              - name: message 
+                value: '{{steps.ifShortEnough.outputs.result}}'
+          - name: largerNo
+            template: echo
+            when: "{{steps.ifShortEnough.outputs.result}} >=20"
+            arguments:
+              parameters:
+              - name: message 
+                value: '{{steps.ifShortEnough.outputs.result}}'
+
+    - name: flip-coin
+      script:
+        image: python:alpine3.6
+        command: [ python ]
+        source: |
+          import random
+          n = random.randint(0,40)
+          print(n)
+      # outputs:
+      #   parameters:
+      #     - name: stepresult
+      #       valueFrom:
+      #         expression: "steps['flip-coin'].outputs.result == 'heads' ? steps.heads.outputs.result : steps.tails.outputs.result"
+
+    - name: echo
+      inputs:
+        parameters:
+          - name: message
+      container:
+        image: 'docker/whalesay:latest'
+        command:
+          - cowsay
+        args:
+          - '{{inputs.parameters.message}}'
