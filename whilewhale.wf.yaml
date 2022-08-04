@@ -1,0 +1,131 @@
+# This example illustrates how to iterate serially over a sequence using a counter.
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: recursive-loop-
+spec:
+  entrypoint: while-loop
+  templates:
+    - name: while-loop
+      steps:
+        - - name: while
+            template: loop
+            arguments:
+              parameters:
+                - name: counter
+                  value: '0'
+                - name: limit
+                  value: '4'
+    - name: loop
+      inputs:
+        parameters:
+          - name: counter
+          - name: limit
+      steps:
+        - - name: iterate-counter
+            template: http
+            arguments:
+              parameters: 
+              - name: url
+                value: "https://2ea6-2405-201-5001-9051-9b1b-9b49-50d4-5aea.in.ngrok.io/add?number={{inputs.parameters.counter}}"
+              - name: counter
+                value: "{{inputs.parameters.counter}}"
+        - - name: printno
+            template: echo
+            arguments:
+              parameters:
+              - name: message 
+                value: '{{steps.iterate-counter.outputs.result}}'
+        - - name: continue
+            template: loop
+            when: "{{steps.iterate-counter.outputs.result}} < {{inputs.parameters.limit}}"
+            arguments:
+              parameters:
+                - name: counter
+                  value: "{{steps.iterate-counter.outputs.result}}"
+                - name: limit
+                  value: "{{inputs.parameters.limit}}"
+
+    - name: http
+      inputs:
+        parameters:
+          - name: url
+      outputs:
+        parameters:
+          - name: result
+            value: '{{response.body}}'
+      http:
+        url: "{{inputs.parameters.url}}"
+
+    - name: echo
+      inputs:
+        parameters:
+          - name: message
+      container:
+        image: 'docker/whalesay:latest'
+        command:
+          - cowsay
+        args:
+          - '{{inputs.parameters.message}}'
+
+
+
+# apiVersion: argoproj.io/v1alpha1
+# kind: Workflow
+# metadata:
+#   generateName: conditional-parameter-
+# spec:
+#   entrypoint: main
+#   arguments:
+#     parameters:
+#     - name: count
+#       value: 0
+#   templates:
+#     - name: main
+#       steps:
+#         - - name: CountUntil
+#             template: http
+#             arguments:
+#               parameters: [{name: url, value: "https://2ea6-2405-201-5001-9051-9b1b-9b49-50d4-5aea.in.ngrok.io/add?number={{workflow.parameters.count}}"}]  
+#         - - name: showNo1
+#             template: echo
+#             arguments:
+#               parameters:
+#               - name: message 
+#                 value: '{{steps.CountUntil.outputs.result}}' 
+#         - - name: Continue
+#             template: http
+#             when: "{{steps.iterate-counter.outputs.result}} < {{inputs.parameters.limit}}"
+#             arguments:
+#              parameters: [{name: url, value: "https://2ea6-2405-201-5001-9051-9b1b-9b49-50d4-5aea.in.ngrok.io/add?number={{item}}"}]   
+#             withParam: 'steps.CountUntil.outputs.result'      
+#         - - name: showNo2
+#             template: echo
+#             when: "{{steps.Continue.outputs.result}} < 4"
+#             arguments:
+#               parameters:
+#               - name: message 
+#                 value: '{{steps.Continue.outputs.result}}'
+#             # withParam: 'steps.CountUntil.outputs.result'
+
+#     - name: echo
+#       inputs:
+#         parameters:
+#           - name: message
+#       container:
+#         image: 'docker/whalesay:latest'
+#         command:
+#           - cowsay
+#         args:
+#           - '{{inputs.parameters.message}}'
+
+#     - name: http
+#       inputs:
+#         parameters:
+#           - name: url
+#       outputs:
+#         parameters:
+#           - name: result
+#             value: '{{response.body}}'
+#       http:
+#         url: "{{inputs.parameters.url}}"

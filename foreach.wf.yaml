@@ -10,29 +10,19 @@ spec:
     - - name: cal-message
         template: http
         arguments:
-          # parameters:
          parameters: [{name: url, value: "https://8e3c-2405-201-5001-9051-b42f-f844-be-e63d.in.ngrok.io/multiply?number={{item}}"}]    
- 
-          # - name: number
-          #   value: "{{item}}"
         withItems:
         - 1
         - 2
 
     - - name: step2
-        # depends: good
         template: echo
         arguments:
           parameters:
           - name: message 
             value: '{{steps.cal-message.outputs.result}}'
 
-    # - - name: print-message
-    #     template: http
-    #     arguments:
-    #       parameters: [{name: url, value: "https://8e3c-2405-201-5001-9051-b42f-f844-be-e63d.in.ngrok.io/gomod1?echoValue={{steps.cal-message.outputs.result}}"}]    
-    #         # value: "{{steps.cal-message.outputs.result}}"
-
+  
   - name: cal-no
     inputs:
       parameters:
@@ -41,17 +31,6 @@ spec:
       image: alpine:latest
       command: [sh, -c]
       args: ["echo {{inputs.parameters.number}}"]
-
-  - name: http
-    inputs:
-      parameters:
-        - name: url
-    outputs:
-      parameters:
-        - name: result
-          value: '{{response.body}}'
-    http:
-      url: "{{inputs.parameters.url}}"
 
   - name: echo
     inputs:
@@ -63,3 +42,14 @@ spec:
         - cowsay
       args:
         - '{{inputs.parameters.message}}'
+
+  # - name: http
+  #   inputs:
+  #     parameters:
+  #       - name: url
+  #   outputs:
+  #     parameters:
+  #       - name: result
+  #         value: '{{response.body}}'
+  #   http:
+  #     url: "{{inputs.parameters.url}}"

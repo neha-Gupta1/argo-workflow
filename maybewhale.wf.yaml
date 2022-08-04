@@ -36,11 +36,6 @@ spec:
           import random
           n = random.randint(0,40)
           print(n)
-      # outputs:
-      #   parameters:
-      #     - name: stepresult
-      #       valueFrom:
-      #         expression: "steps['flip-coin'].outputs.result == 'heads' ? steps.heads.outputs.result : steps.tails.outputs.result"
 
     - name: echo
       inputs:
