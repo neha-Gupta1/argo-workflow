@@ -1,0 +1,196 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: hello-argo-
+  namespace: fission
+spec:
+  entrypoint: insurance
+  arguments:
+    parameters:
+      - name: age
+        value: 35
+      - name: salary
+        value: 20000
+  templates:
+  - name: insurance
+    dag:
+      tasks:
+# Get name info
+      - name: postfirstname
+        template: postfirstname
+        arguments: 
+          parameters:         
+            - name: first_name
+              value: 'Neha'
+            - name: url
+              value: https://8087-2405-201-5001-909e-fc64-dd1e-5038-2d4e.in.ngrok.io/postfirstname
+      - name: postlastname
+        template: postlastname
+        arguments: 
+          parameters:         
+            - name: last_name
+              value: 'Gupta'
+            - name: url
+              value: https://8087-2405-201-5001-909e-fc64-dd1e-5038-2d4e.in.ngrok.io/postlastname
+      - name: getfullname
+        template: getfullname
+        depends: 'postfirstname && postlastname'
+        arguments:
+          parameters:         
+            - name: first_name
+              value: '{{tasks.postfirstname.outputs.result}}'
+            - name: last_name
+              value: '{{tasks.postlastname.outputs.result}}'
+            - name: url
+              value: https://8087-2405-201-5001-909e-fc64-dd1e-5038-2d4e.in.ngrok.io/getfullnamehandler
+# Get age info
+      - name: getage
+        template: getage
+        arguments:
+          parameters:         
+            - name: age
+              value: '{{workflow.parameters.age}}'
+            - name: url
+              value: https://8087-2405-201-5001-909e-fc64-dd1e-5038-2d4e.in.ngrok.io/setage
+# Get montly salary
+      - name: getmonthlysalary
+        template: getmonthlysalary
+        arguments:
+          parameters:         
+            - name: salary
+              value: '{{workflow.parameters.salary}}'
+            - name: url
+              value: https://8087-2405-201-5001-909e-fc64-dd1e-5038-2d4e.in.ngrok.io/setmonthlysalary
+# get coverage amount
+      - name: gethighriskinsurance
+        template: gethighriskinsurance
+        depends: 'getfullname && getmonthlysalary && getage'
+        when: "({{tasks.getmonthlysalary.outputs.result}}*12 < 1200000) || ({{tasks.getage.outputs.result}}>30)"
+        arguments:
+          parameters: 
+            - name: name
+              value: '{{tasks.getfullname.outputs.result}}'  
+            - name: salary
+              value: '{{tasks.getmonthlysalary.outputs.result}}' 
+            - name: age
+              value: '{{tasks.getage.outputs.result}}'
+            - name: url
+              value: https://8087-2405-201-5001-909e-fc64-dd1e-5038-2d4e.in.ngrok.io/getHighRiskEligibility
+                 
+      - name: echohighriskresult
+        template: echo
+        depends: 'gethighriskinsurance'
+        arguments:
+          parameters:         
+            - name: name
+              value: '{{tasks.gethighriskinsurance.outputs.result}}'
+
+      - name: getlowriskinsurance
+        template: getlowriskinsurance
+        depends: 'getmonthlysalary && getage && getfullname'
+        when: "({{tasks.getmonthlysalary.outputs.result}}*12 > 1200000) || ({{tasks.getage.outputs.result}}<30)"
+        arguments:
+          parameters: 
+            - name: name
+              value: '{{tasks.getfullname.outputs.result}}'  
+            - name: salary
+              value: '{{tasks.getmonthlysalary.outputs.result}}' 
+            - name: age
+              value: '{{tasks.getage.outputs.result}}'
+            - name: url
+              value: https://8087-2405-201-5001-909e-fc64-dd1e-5038-2d4e.in.ngrok.io/getLowRiskEligibility
+
+      - name: echolowriskresult
+        template: echo
+        depends: 'getlowriskinsurance'
+        arguments:
+          parameters:         
+            - name: name
+              value: '{{tasks.getlowriskinsurance.outputs.result}}'
+
+  - name: postfirstname
+    inputs:
+      parameters:
+      - name: url
+      - name: first_name
+    http:
+      method: GET
+      url: "{{inputs.parameters.url}}"
+      body: '{"first_name":"{{inputs.parameters.first_name}}"}'
+
+  - name: postlastname
+    inputs:
+      parameters:
+      - name: url
+      - name: last_name
+    http:
+      method: GET
+      url: "{{inputs.parameters.url}}"
+      body: '{"last_name":"{{inputs.parameters.last_name}}"}'
+
+  - name: getfullname
+    inputs:
+      parameters:
+      - name: url
+      - name: first_name
+      - name: last_name
+    http:
+      method: GET
+      url: "{{inputs.parameters.url}}"
+      body: '{"first_name":"{{inputs.parameters.first_name}}","last_name":"{{inputs.parameters.last_name}}"}' 
+
+  - name: echo
+    inputs:
+      parameters:
+      - name: name
+    container:
+      image: docker/whalesay:latest
+      command: [cowsay]
+      args: ["{{inputs.parameters.name}}"]
+
+  - name: getage
+    inputs:
+      parameters:
+      - name: url
+      - name: age
+    http:
+      method: GET
+      url: "{{inputs.parameters.url}}"
+      body: '{"age":{{inputs.parameters.age}}}'  #age is a `int` input
+
+  - name: getmonthlysalary
+    inputs:
+      parameters:
+      - name: url
+      - name: salary
+    http:
+      method: GET
+      url: "{{inputs.parameters.url}}"
+      body: '{"salary":{{inputs.parameters.salary}}}' 
+
+  - name: gethighriskinsurance
+    inputs:
+      parameters:
+      - name: url
+      - name: name
+      - name: age
+      - name: salary
+    http:
+      method: GET
+      url: "{{inputs.parameters.url}}"
+      body: '{"name":"{{inputs.parameters.name}}","age":{{inputs.parameters.age}},"salary":{{inputs.parameters.salary}}}' 
+
+  - name: getlowriskinsurance
+    inputs:
+      parameters:
+      - name: url
+      - name: name
+      - name: age
+      - name: salary
+    http:
+      method: GET
+      url: "{{inputs.parameters.url}}"
+      body: '{"name":"{{inputs.parameters.name}}","age":{{inputs.parameters.age}},"salary":{{inputs.parameters.salary}}}' 
+
+
+    
