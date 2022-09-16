@@ -19,4 +19,3 @@ fission httptrigger create --name getlowriskinsurance --url /getLowRiskEligibili
 
 fission function create --name highriskinsurance --env go --src fission-functions/calculateEligibililty.go --entrypoint GetHighRiskInsuranceHandler
 fission httptrigger create --name gethighriskinsurance --url /getHighRiskEligibility --method GET --function highriskinsurance
-
