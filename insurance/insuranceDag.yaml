@@ -23,7 +23,7 @@ spec:
             - name: first_name
               value: 'Neha'
             - name: url
-              value: https://8087-2405-201-5001-909e-fc64-dd1e-5038-2d4e.in.ngrok.io/postfirstname
+              value: http://router.fission.svc.cluster.local/postfirstname #http://<service_name>.<namespace_of_fission>.svc.cluster.<cluster_name>/<httptrigger_url>
       - name: postlastname
         template: postlastname
         arguments: 
@@ -31,7 +31,7 @@ spec:
             - name: last_name
               value: 'Gupta'
             - name: url
-              value: https://8087-2405-201-5001-909e-fc64-dd1e-5038-2d4e.in.ngrok.io/postlastname
+              value: http://router.fission.svc.cluster.local/postlastname
       - name: getfullname
         template: getfullname
         depends: 'postfirstname && postlastname'
@@ -42,7 +42,7 @@ spec:
             - name: last_name
               value: '{{tasks.postlastname.outputs.result}}'
             - name: url
-              value: https://8087-2405-201-5001-909e-fc64-dd1e-5038-2d4e.in.ngrok.io/getfullnamehandler
+              value: http://router.fission.svc.cluster.local/getfullnamehandler 
 # Get age info
       - name: getage
         template: getage
@@ -51,7 +51,7 @@ spec:
             - name: age
               value: '{{workflow.parameters.age}}'
             - name: url
-              value: https://8087-2405-201-5001-909e-fc64-dd1e-5038-2d4e.in.ngrok.io/setage
+              value: http://router.fission.svc.cluster.local/setage
 # Get montly salary
       - name: getmonthlysalary
         template: getmonthlysalary
@@ -60,7 +60,7 @@ spec:
             - name: salary
               value: '{{workflow.parameters.salary}}'
             - name: url
-              value: https://8087-2405-201-5001-909e-fc64-dd1e-5038-2d4e.in.ngrok.io/setmonthlysalary
+              value: http://router.fission.svc.cluster.local/setmonthlysalary
 # get coverage amount
       - name: gethighriskinsurance
         template: gethighriskinsurance
@@ -75,7 +75,7 @@ spec:
             - name: age
               value: '{{tasks.getage.outputs.result}}'
             - name: url
-              value: https://8087-2405-201-5001-909e-fc64-dd1e-5038-2d4e.in.ngrok.io/getHighRiskEligibility
+              value: http://router.fission.svc.cluster.local/getHighRiskEligibility
                  
       - name: echohighriskresult
         template: echo
@@ -98,7 +98,7 @@ spec:
             - name: age
               value: '{{tasks.getage.outputs.result}}'
             - name: url
-              value: https://8087-2405-201-5001-909e-fc64-dd1e-5038-2d4e.in.ngrok.io/getLowRiskEligibility
+              value: http://router.fission.svc.cluster.local/getLowRiskEligibility
 
       - name: echolowriskresult
         template: echo

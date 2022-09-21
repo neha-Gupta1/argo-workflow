@@ -22,8 +22,7 @@ func GetLowRiskInsuranceHandler(w http.ResponseWriter, r *http.Request) { // nol
 	}
 	insurance := insurance{}
 	json.Unmarshal(body, &insurance)
-	_, err = w.Write([]byte(fmt.Sprintf("%v", insurance)))
-	// _, err = w.Write([]byte(fmt.Sprintf("Hello %s !! as per your age: %d We can give you an insurance with assured money %d", insurance.Name, insurance.Age, insurance.Salary*100)))
+	_, err = w.Write([]byte(fmt.Sprintf("Hello %s !! as per your age: %d We can give you an insurance with assured money %d", insurance.Name, insurance.Age, insurance.Salary*100)))
 	if err != nil {
 		http.Error(w, "Error writing response", http.StatusInternalServerError)
 	}
@@ -38,13 +37,7 @@ func GetHighRiskInsuranceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	insurance := insurance{}
 	json.Unmarshal(body, &insurance)
-	// _, err = w.Write([]byte(fmt.Sprintf("Hello %s !! as per your age: %d We can give you an insurance with assured money %d", insurance.Name, insurance.Age, insurance.Salary*50)))
-	// if err != nil {
-	// 	http.Error(w, "Error writing response", http.StatusInternalServerError)
-	// }
-
-	_, err = w.Write([]byte(fmt.Sprintf("%v", insurance)))
-	// _, err = w.Write([]byte(fmt.Sprintf("Hello %s !! as per your age: %d We can give you an insurance with assured money %d", insurance.Name, insurance.Age, insurance.Salary*100)))
+	_, err = w.Write([]byte(fmt.Sprintf("Hello %s !! as per your age: %d We can give you an insurance with assured money %d", insurance.Name, insurance.Age, insurance.Salary*50)))
 	if err != nil {
 		http.Error(w, "Error writing response", http.StatusInternalServerError)
 	}
