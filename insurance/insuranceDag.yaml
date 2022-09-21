@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  generateName: hello-argo-
+  generateName: insurance-argo-
   namespace: fission
 spec:
   entrypoint: insurance
@@ -11,6 +11,10 @@ spec:
         value: 35
       - name: salary
         value: 20000
+      - name: first_name
+        value: "Neha"
+      - name: last_name
+        value: "Gupta"
   templates:
   - name: insurance
     dag:
@@ -21,7 +25,7 @@ spec:
         arguments: 
           parameters:         
             - name: first_name
-              value: 'Neha'
+              value: '{{workflow.parameters.first_name}}'
             - name: url
               value: http://router.fission.svc.cluster.local/postfirstname #http://<service_name>.<namespace_of_fission>.svc.cluster.<cluster_name>/<httptrigger_url>
       - name: postlastname
@@ -29,7 +33,7 @@ spec:
         arguments: 
           parameters:         
             - name: last_name
-              value: 'Gupta'
+              value: '{{workflow.parameters.last_name}}'
             - name: url
               value: http://router.fission.svc.cluster.local/postlastname
       - name: getfullname
